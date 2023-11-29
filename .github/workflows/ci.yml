@@ -1,0 +1,56 @@
+name: build
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  preprelease:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Dart SDK
+        # uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@v1
+
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Update Version
+        id: version
+        run: |
+          previous=$(cat version.txt)
+          version="$((previous + 1))"
+          echo "$version" > version.txt
+          echo "value=${version}" >> $GITHUB_ENV
+
+      - name: Commit Release
+        if: steps.releaseInfo.outputs.shouldRelease == 'yes'
+        run: |
+          git diff
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "chore(release): prepare release for ${{ steps.version.outputs.value }}"
+          git push
+
+      - name: Create Release
+        if: steps.releaseInfo.outputs.shouldRelease == 'yes'
+        id: createRelease
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          tag_name: ${{ steps.releaseInfo.outputs.version }}
+          release_name: Release ${{ steps.releaseInfo.outputs.version }}
+          body: |
+            Changes in this Release
+
+            ${{ steps.releaseInfo.outputs.summary }}
+
+          draft: false
+          prerelease: false
