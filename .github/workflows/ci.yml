@@ -3,13 +3,12 @@ name: build
 on:
   push:
     branches: ["*"]
-  pull_request:
-    branches: ["*"]
 
 jobs:
   preprelease:
     name: Prepare Release
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
 
     steps:
       - uses: actions/checkout@v3
@@ -18,34 +17,38 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: Update Version
-        id: version
+        id: get-version
         run: |
           previous=$(cat version.txt)
           version="$((previous + 1))"
+          echo $version
           echo "$version" > version.txt
-          echo "value=${version}" >> $GITHUB_ENV
+          echo "version=${version}" >> $GITHUB_ENV
 
-      - name: Commit Release
-        run: |
-          git diff
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "chore(release): prepare release for ${{ steps.version.outputs.value }}"
-          git push
+      - name: Preview Version
+        run: echo ${{ steps.get-version.outputs.version }}
 
-      - name: Create Release
-        id: createRelease
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-        with:
-          tag_name: ${{ steps.version.outputs.value }}
-          release_name: Release ${{ steps.version.outputs.value }}
-          body: |
-            Changes in this Release
+      # - name: Commit Release
+      #   run: |
+      #     git diff
+      #     git config user.name github-actions
+      #     git config user.email github-actions@github.com
+      #     git add .
+      #     git commit -m "chore(release): prepare release for ${{ steps.get-version.outputs.version }}"
+      #     git push
 
-            ${{ steps.version.outputs.value }}
+      # - name: Create Release
+      #   id: createRelease
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.PAT }}
+      #   with:
+      #     tag_name: ${{ steps.version.outputs.value }}
+      #     release_name: Release ${{ steps.version.outputs.value }}
+      #     body: |
+      #       Changes in this Release
 
-          draft: false
-          prerelease: false
+      #       ${{ steps.version.outputs.value }}
+
+      #     draft: false
+      #     prerelease: false
