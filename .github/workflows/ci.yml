@@ -40,12 +40,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
         with:
-          tag_name: ${{ steps.releaseInfo.outputs.version }}
-          release_name: Release ${{ steps.releaseInfo.outputs.version }}
+          tag_name: ${{ steps.version.outputs.value }}
+          release_name: Release ${{ steps.version.outputs.value }}
           body: |
             Changes in this Release
 
-            ${{ steps.releaseInfo.outputs.summary }}
+            ${{ steps.version.outputs.value }}
 
           draft: false
           prerelease: false
