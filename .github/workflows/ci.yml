@@ -41,6 +41,6 @@ jobs:
         id: createRelease
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ steps.nextVersion.outputs.value }}
-          name: Release v${{ steps.nextVersion.outputs.value }}
+          tag: ${{ steps.version.outputs.value }}
+          name: Release v${{ steps.version.outputs.value }}
           token: ${{ secrets.GITHUB_TOKEN }}
