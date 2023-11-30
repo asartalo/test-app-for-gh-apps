@@ -17,38 +17,38 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: Update Version
-        id: get-version
+        id: version
         run: |
           previous=$(cat version.txt)
           version="$((previous + 1))"
           echo $version
           echo "$version" > version.txt
-          echo "version=${version}" >> $GITHUB_ENV
+          echo "value=${version}" >> $GITHUB_OUTPUT
 
       - name: Preview Version
-        run: echo ${{ steps.get-version.outputs.version }}
+        run: echo ${{ steps.version.outputs.value }}
 
-      # - name: Commit Release
-      #   run: |
-      #     git diff
-      #     git config user.name github-actions
-      #     git config user.email github-actions@github.com
-      #     git add .
-      #     git commit -m "chore(release): prepare release for ${{ steps.get-version.outputs.version }}"
-      #     git push
+      - name: Commit Release
+        run: |
+          git diff
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "chore(release): prepare release for ${{ steps.version.outputs.value }}"
+          git push
 
-      # - name: Create Release
-      #   id: createRelease
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.PAT }}
-      #   with:
-      #     tag_name: ${{ steps.version.outputs.value }}
-      #     release_name: Release ${{ steps.version.outputs.value }}
-      #     body: |
-      #       Changes in this Release
+      - name: Create Release
+        id: createRelease
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          tag_name: ${{ steps.version.outputs.value }}
+          release_name: Release ${{ steps.version.outputs.value }}
+          body: |
+            Changes in this Release
 
-      #       ${{ steps.version.outputs.value }}
+            ${{ steps.version.outputs.value }}
 
-      #     draft: false
-      #     prerelease: false
+          draft: false
+          prerelease: false
