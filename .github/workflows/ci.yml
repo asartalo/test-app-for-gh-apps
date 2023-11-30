@@ -43,4 +43,4 @@ jobs:
         with:
           tag: ${{ steps.version.outputs.value }}
           name: Release v${{ steps.version.outputs.value }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
